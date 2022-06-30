@@ -81,7 +81,7 @@ def test_deepspeed_summary():
         config=config,
         model=model,
         model_parameters=model.parameters(),
-        dist_init_required=False,
+        # dist_init_required=False,
     )
 
     model_summary = DeepSpeedSummary(model, max_depth=1)
