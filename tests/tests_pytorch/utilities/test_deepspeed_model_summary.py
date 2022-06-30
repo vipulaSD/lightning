@@ -76,12 +76,13 @@ def test_deepspeed_summary():
       "zero_optimization": {"stage": 3}
     }
 
+    deepspeed.init_distributed()
+
     _, _, _, _ = deepspeed.initialize(
         args=argparse.Namespace(device_rank=0),
         config=config,
         model=model,
         model_parameters=model.parameters(),
-        # dist_init_required=False,
     )
 
     model_summary = DeepSpeedSummary(model, max_depth=1)
