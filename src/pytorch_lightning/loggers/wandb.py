@@ -17,6 +17,7 @@ Weights and Biases Logger
 """
 import os
 from argparse import Namespace
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 from weakref import ReferenceType
@@ -26,9 +27,25 @@ import torch.nn as nn
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers.logger import Logger, rank_zero_experiment
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
-from pytorch_lightning.utilities.imports import _WANDB_GREATER_EQUAL_0_10_22, _WANDB_GREATER_EQUAL_0_12_10
+from pytorch_lightning.utilities.imports import _RequirementAvailable
 from pytorch_lightning.utilities.logger import _add_prefix, _convert_params, _flatten_dict, _sanitize_callable_params
 from pytorch_lightning.utilities.rank_zero import rank_zero_only, rank_zero_warn
+
+
+@lru_cache
+def _is_wandb_available():
+    return _RequirementAvailable("wandb")
+
+
+@lru_cache
+def _is_wandb_greater_equal_0_10_22():
+    return _RequirementAvailable("wandb>=0.10.22")
+
+
+@lru_cache
+def _is_wandb_greater_equal_0_12_10():
+    return _RequirementAvailable("wandb>=0.12.10")
+
 
 try:
     import wandb
@@ -276,7 +293,7 @@ class WandbLogger(Logger):
                 "Hint: Set `offline=False` to log your model."
             )
 
-        if log_model and not _WANDB_GREATER_EQUAL_0_10_22:
+        if log_model and not _is_wandb_greater_equal_0_10_22():
             rank_zero_warn(
                 f"Providing log_model={log_model} requires wandb version >= 0.10.22"
                 " for logging associated model metadata.\n"
@@ -306,7 +323,7 @@ class WandbLogger(Logger):
         self._name = self._wandb_init.get("name")
         self._id = self._wandb_init.get("id")
         # start wandb run (to create an attach_id for distributed modes)
-        if _WANDB_GREATER_EQUAL_0_12_10:
+        if _is_wandb_greater_equal_0_12_10():
             wandb.require("service")
             _ = self.experiment
 
@@ -506,7 +523,7 @@ class WandbLogger(Logger):
                         if hasattr(checkpoint_callback, k)
                     },
                 }
-                if _WANDB_GREATER_EQUAL_0_10_22
+                if _is_wandb_greater_equal_0_10_22()
                 else None
             )
             artifact = wandb.Artifact(name=f"model-{self.experiment.id}", type="model", metadata=metadata)

@@ -34,7 +34,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR
 from pytorch_lightning import __version__, Callback, LightningDataModule, LightningModule, seed_everything, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.demos.boring_classes import BoringDataModule, BoringModel
-from pytorch_lightning.loggers import _COMET_AVAILABLE, _NEPTUNE_AVAILABLE, _WANDB_AVAILABLE, TensorBoardLogger
+from pytorch_lightning.loggers import _COMET_AVAILABLE, _NEPTUNE_AVAILABLE, TensorBoardLogger
+from pytorch_lightning.loggers.wandb import _is_wandb_available
 from pytorch_lightning.plugins.environments import SLURMEnvironment
 from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.trainer.states import TrainerFn
@@ -1430,7 +1431,7 @@ def test_tensorboard_logger_init_args():
     _test_logger_init_args("TensorBoardLogger", {"save_dir": "tb", "name": "tb"})
 
 
-@pytest.mark.skipif(not _WANDB_AVAILABLE, reason="wandb is required")
+@pytest.mark.skipif(not _is_wandb_available(), reason="wandb is required")
 def test_wandb_logger_init_args():
     _test_logger_init_args("WandbLogger", {"save_dir": "wandb", "notes": "wandb"})
 
